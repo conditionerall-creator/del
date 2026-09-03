@@ -270,7 +270,7 @@
         function isValidModelCode(str) {
             if (!str || typeof str !== 'string') return false;
             const s = str.trim();
-            if (s.length < 4 || s.length > 50) return false;
+            if (s.length < 3 || s.length > 50) return false;
 
             // Исключаем скобки с диапазоном мощности вроде (1,0 - 6,3) или (0.9-2.8)
             if (/\(\s*\d+[\d\.,]*\s*[-–—]\s*\d+[\d\.,]*\s*\)/.test(s)) return false;
@@ -284,21 +284,21 @@
                 'потужність', 'коефіцієнт', 'ціна', 'дилер', 'аксесуари',
                 'внутрішній', 'зовнішній', 'панель', 'пульт', 'комплект', 'інвертор',
                 'спліт', 'система', 'холод', 'тепло', 'серія', 'моделі', 'примітка',
-                'аксессуары', 'наименование', 'руб', 'грн', 'usd', 'eur'
+                'аксессуары', 'наименование', 'руб', 'грн', 'usd', 'eur', 'lcac'
             ];
 
             for (const word of forbidden) {
                 if (lower.includes(word)) return false;
             }
 
-            // Маркировка должна соответствовать паттерну артикула (буквенный префикс + цифры)
-            const modelPattern = /^[A-Z]{2,6}[0-9]{2,3}[A-Z0-9\-\(\)\/]*$/i;
+            // Маркировка должна соответствовать паттерну артикула
+            const modelPattern = /^[A-Z]{2,6}[0-9]{1,3}[A-Z0-9\-\(\)\/]*$/i;
             const cleanStr = s.replace(/\s+/g, '');
             if (modelPattern.test(cleanStr)) return true;
 
-            // Сдвоенные модели для Напівпром: SRK71ZR-W / FDC71VNX-W
-            if (s.includes('/')) {
-                const parts = s.split('/').map(p => p.trim());
+            // Сдвоенные модели
+            if (s.includes('+')) {
+                const parts = s.split('+').map(p => p.trim());
                 return parts.length === 2 && parts.every(p => modelPattern.test(p.replace(/\s+/g, '')));
             }
 
@@ -334,27 +334,17 @@
 
             if (numericCandidates.length === 0) return null;
 
-            // Цены обычно находятся в правых колонках (colIdx >= 4) и превышают минимальные значения
-            const priceCandidates = numericCandidates.filter(c => c.colIdx >= 4 && c.val >= 30);
+            // Цены обычно находятся в крайних правых колонках (colIdx >= 5)
+            const priceCandidates = numericCandidates.filter(c => c.colIdx >= 5 && c.val >= 50);
 
             if (priceCandidates.length === 0) {
                 return numericCandidates[numericCandidates.length - 1].raw;
             }
 
-            // В "Побутові" и других вкладках, если идут подряд две цены (например 525 комплект и 195 элемент),
-            // то дилерская цена комплекта идет первой из ценовых колонок
-            if (priceCandidates.length >= 2) {
-                const c1 = priceCandidates[priceCandidates.length - 2];
-                const c2 = priceCandidates[priceCandidates.length - 1];
-                if (c1.val > c2.val) {
-                    return c1.raw;
-                }
-            }
-
             return priceCandidates[priceCandidates.length - 1].raw;
         }
 
-        // Парсинг файла Excel строго для 5 категорий
+        // Парсинг файла Excel строго для 5 категорий с учетом структуры LCAC
         function parseExcelArrayBuffer(buffer) {
             const workbook = XLSX.read(buffer, { type: 'array' });
             
@@ -368,54 +358,41 @@
 
             workbook.SheetNames.forEach((sheetName) => {
                 const catKey = getCanonicalCategoryKey(sheetName);
-                if (!catKey) return; // Игнорируем лишние вкладки
+                if (!catKey) return;
 
                 const worksheet = workbook.Sheets[sheetName];
                 const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
                 if (!rawRows || rawRows.length === 0) return;
 
                 const category = canonicalMap[catKey];
+                let lastValidPrice = null;
 
                 rawRows.forEach((row) => {
                     if (!Array.isArray(row)) return;
                     const cells = row.map(cell => String(cell).trim());
                     if (cells.every(c => c === '')) return;
 
-                    if (catKey === 'напівпром') {
-                        // В Напівпром сдвоенные блоки (внутренний и внешний) в колонках E и F
-                        let inUnit = cells[4] || '';
-                        let outUnit = cells[5] || '';
+                    // Проверяем цену в текущей строке
+                    const rowPrice = extractPriceFromRow(cells);
+                    if (rowPrice && rowPrice !== 'За запитом') {
+                        lastValidPrice = rowPrice;
+                    }
+
+                    if (catKey === 'напівпром' || catKey === 'galactic lcac') {
+                        // Для LCAC и Напівпром главная маркировка комплекта идет в первой колонке (индекс 0)
+                        let modelCandidate = cells[0];
                         
-                        if (!isValidModelCode(inUnit) && !isValidModelCode(outUnit)) {
-                            const validInRow = cells.filter(c => isValidModelCode(c));
-                            if (validInRow.length >= 2) {
-                                inUnit = validInRow[0];
-                                outUnit = validInRow[1];
-                            } else if (validInRow.length === 1) {
-                                inUnit = validInRow[0];
-                            }
-                        }
-
-                        let modelStr = '';
-                        if (isValidModelCode(inUnit) && isValidModelCode(outUnit)) {
-                            modelStr = `${sanitizeModelName(inUnit)} / ${sanitizeModelName(outUnit)}`;
-                        } else if (isValidModelCode(inUnit)) {
-                            modelStr = sanitizeModelName(inUnit);
-                        } else if (isValidModelCode(outUnit)) {
-                            modelStr = sanitizeModelName(outUnit);
-                        }
-
-                        if (modelStr) {
-                            const price = extractPriceFromRow(cells);
-                            if (price) {
-                                if (!category.items.some(it => it.model === modelStr)) {
-                                    category.items.push({ model: modelStr, basePrice: price });
+                        if (isValidModelCode(modelCandidate)) {
+                            const cleanModel = sanitizeModelName(modelCandidate);
+                            const priceToUse = rowPrice || lastValidPrice;
+                            
+                            if (priceToUse && cleanModel) {
+                                if (!category.items.some(it => it.model === cleanModel)) {
+                                    category.items.push({ model: cleanModel, basePrice: priceToUse });
                                 }
                             }
                         }
                     } else {
-                        // Для Побутові, Мультисистеми, Galactic, Galactic LCAC:
-                        // Маркировка должна быть в первой или второй колонке
                         let modelCandidate = cells[0];
                         if (!isValidModelCode(modelCandidate) && cells[1] && isValidModelCode(cells[1])) {
                             modelCandidate = cells[1];
@@ -423,7 +400,7 @@
 
                         if (isValidModelCode(modelCandidate)) {
                             const cleanModel = sanitizeModelName(modelCandidate);
-                            const price = extractPriceFromRow(cells);
+                            const price = rowPrice || lastValidPrice;
                             if (price && cleanModel) {
                                 if (!category.items.some(it => it.model === cleanModel)) {
                                     category.items.push({ model: cleanModel, basePrice: price });
@@ -434,7 +411,6 @@
                 });
             });
 
-            // Возвращаем строго 5 категорий (только если в них есть данные)
             return Object.values(canonicalMap).filter(cat => cat.items.length > 0);
         }
 
@@ -662,23 +638,7 @@
                         { model: "SRK50HE-S1", basePrice: "610" },
                         { model: "SRK20ZSPR-S", basePrice: "525" }, 
                         { model: "SRK25ZSPR-S", basePrice: "560" }, 
-                        { model: "SRK35ZSPR-S", basePrice: "650" },
-                        { model: "SRK45ZSPR-S", basePrice: "1 100" },
-                        { model: "SRK63ZSPR-S", basePrice: "1 510" },
-                        { model: "SRK71ZSPR-S", basePrice: "1 745" },
-                        { model: "SRK80ZSPR-S", basePrice: "1 900" },
-                        { model: "SRK20ZS-W", basePrice: "620" },
-                        { model: "SRK25ZS-W", basePrice: "680" },
-                        { model: "SRK35ZS-W", basePrice: "790" },
-                        { model: "SRK50ZS-W", basePrice: "1 150" },
-                        { model: "SRK20ZSX-W", basePrice: "850" },
-                        { model: "SRK25ZSX-W", basePrice: "920" },
-                        { model: "SRK35ZSX-W", basePrice: "1 080" },
-                        { model: "SRK50ZSX-W", basePrice: "1 420" },
-                        { model: "SRK63ZR-W", basePrice: "1 620" },
-                        { model: "SRK71ZR-W", basePrice: "1 880" },
-                        { model: "SRK80ZR-W", basePrice: "2 150" },
-                        { model: "SRK100ZR-W", basePrice: "2 580" }
+                        { model: "SRK35ZSPR-S", basePrice: "650" }
                     ] 
                 },
                 { 
@@ -687,26 +647,7 @@
                     colorClass: CATEGORY_CONFIGS[1].color, 
                     items: [ 
                         { model: "SCM40ZS-W", basePrice: "1 090" }, 
-                        { model: "SCM45ZS-W", basePrice: "1 180" },
-                        { model: "SCM50ZS-W", basePrice: "1 364" },
-                        { model: "SCM60ZS-W", basePrice: "1 679" },
-                        { model: "SCM71ZS-W", basePrice: "2 030" },
-                        { model: "SCM80ZS-W", basePrice: "2 263" },
-                        { model: "SCM100ZS-W", basePrice: "3 261" },
-                        { model: "SCM125ZM-S", basePrice: "3 460" },
-                        { model: "SKM20ZSP-W", basePrice: "230" },
-                        { model: "SKM25ZSP-W", basePrice: "264" },
-                        { model: "SKM35ZSP-W", basePrice: "292" },
-                        { model: "SRK20ZS-W", basePrice: "338" },
-                        { model: "SRK25ZS-W", basePrice: "370" },
-                        { model: "SRK35ZS-W", basePrice: "424" },
-                        { model: "SRK50ZS-W", basePrice: "595" },
-                        { model: "SRK20ZS-WT", basePrice: "423" },
-                        { model: "SRK20ZS-WB", basePrice: "423" },
-                        { model: "SRK25ZS-WT", basePrice: "455" },
-                        { model: "SRK25ZS-WB", basePrice: "455" },
-                        { model: "SRK35ZS-WT", basePrice: "509" },
-                        { model: "SRK35ZS-WB", basePrice: "509" }
+                        { model: "SCM45ZS-W", basePrice: "1 180" }
                     ] 
                 },
                 { 
@@ -714,23 +655,8 @@
                     title: "Напівпром", 
                     colorClass: CATEGORY_CONFIGS[2].color, 
                     items: [ 
-                        { model: "SRK71ZR-W / FDC71VNX-W", basePrice: "3 140" }, 
-                        { model: "SRK100ZR-W / FDC100VNX-W", basePrice: "4 376" }, 
-                        { model: "SRK100ZR-W / FDC100VSX-W", basePrice: "4 785" },
-                        { model: "SRK100ZR-W / FDC100VNA-W", basePrice: "3 712" },
-                        { model: "SRK100ZR-W / FDC100VSA-W", basePrice: "3 877" },
-                        { model: "SRK71ZR-W / FDC71VNP-W", basePrice: "2 578" },
-                        { model: "SRK100ZR-W / FDC100VNP-W", basePrice: "3 319" },
-                        { model: "FDE40VH / SRC40ZSX-W1", basePrice: "2 496" },
-                        { model: "FDE50VH / SRC50ZSX-W2", basePrice: "2 819" },
-                        { model: "FDE60VH / SRC60ZSX-W1", basePrice: "2 941" },
-                        { model: "FDE71VH / FDC71VNX-W", basePrice: "3 466" },
-                        { model: "FDE100VH / FDC100VNX-W", basePrice: "4 877" },
-                        { model: "FDE100VH / FDC100VSX-W", basePrice: "5 286" },
-                        { model: "FDE125VH / FDC125VNX-W", basePrice: "5 553" },
-                        { model: "FDE125VH / FDC125VSX-W", basePrice: "5 852" },
-                        { model: "FDE140VH / FDC140VNX-W", basePrice: "5 915" },
-                        { model: "FDE140VH / FDC140VSX-W", basePrice: "6 692" }
+                        { model: "SRK71ZR-W + FDC71VNX-W", basePrice: "3 140" }, 
+                        { model: "SRK100ZR-W + FDC100VNX-W", basePrice: "4 376" }
                     ] 
                 },
                 { 
@@ -739,19 +665,7 @@
                     colorClass: CATEGORY_CONFIGS[3].color, 
                     items: [ 
                         { model: "GKZ09SH-W", basePrice: "660" }, 
-                        { model: "GKZ09SH-WS", basePrice: "660" },
-                        { model: "GKZ12SH-W", basePrice: "700" },
-                        { model: "GKZ12SH-WS", basePrice: "700" },
-                        { model: "GKZ07A-W", basePrice: "248" },
-                        { model: "GKZ09A-W", basePrice: "330" },
-                        { model: "GKZ12A-W", basePrice: "390" },
-                        { model: "GKZ18A-W", basePrice: "492" },
-                        { model: "GKZ24A-W", basePrice: "672" },
-                        { model: "GKZ07H-W", basePrice: "280" },
-                        { model: "GKZ09H-W", basePrice: "350" },
-                        { model: "GKZ12H-W", basePrice: "410" },
-                        { model: "GKZ18H-W", basePrice: "520" },
-                        { model: "GKZ24H-W", basePrice: "710" }
+                        { model: "GKZ12SH-W", basePrice: "700" }
                     ] 
                 },
                 { 
@@ -760,7 +674,7 @@
                     colorClass: CATEGORY_CONFIGS[4].color, 
                     items: [ 
                         { model: "GBZ18MLQ-W", basePrice: "1 040" }, 
-                        { model: "GBZ18MLQ7-W", basePrice: "1 040" },
+                        { model: "GBZ18MLQT-W", basePrice: "1 040" },
                         { model: "GBZ24MLQ-W", basePrice: "1 300" },
                         { model: "GBZ24MLNQ7-W", basePrice: "1 300" },
                         { model: "GBZ36MLQ-W", basePrice: "1 690" },
