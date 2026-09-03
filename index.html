@@ -168,13 +168,13 @@
     </footer>
 
     <script>
-        const CACHE_KEY = 'san_ice_price_exact5_v4';
+        const CACHE_KEY = 'san_ice_price_exact5_v5';
         const ONLINE_FILE_PATH = './price.xlsx';
 
         const EXCHANGE_RATES = { USD: 1.0, UAH: 41.5, EUR: 0.92 };
         const CURRENCY_SYMBOLS = { USD: '$', UAH: 'грн', EUR: '€' };
 
-        // СТРОГО 5 разрешенных категорий из прайса
+        // СТРОГО 5 разрешенных категорий
         const CATEGORY_CONFIGS = [
             { id: 'побутові', title: 'Побутові', color: 'bg-gradient-to-br from-blue-600 to-cyan-500' },
             { id: 'мультисистеми', title: 'Мультисистеми', color: 'bg-gradient-to-br from-indigo-600 to-violet-500' },
@@ -240,111 +240,64 @@
             }
         }
 
-        // Определение, к какой из 5 категорий относится лист Excel
         function getCanonicalCategoryKey(sheetName) {
             if (!sheetName || typeof sheetName !== 'string') return null;
             const norm = sheetName.trim().toLowerCase();
             
-            if (norm.includes('побутові') || norm.includes('побытовые')) {
-                return 'побутові';
-            }
-            if (norm.includes('мультисистеми') || norm.includes('мультисистемы')) {
-                return 'мультисистеми';
-            }
-            if (norm.includes('напівпром') || norm.includes('полупром')) {
-                return 'напівпром';
-            }
-            // Проверка Galactic LCAC ДО Galactic
-            if (norm.includes('galactic lcac') || norm.includes('galactic-lcac') || norm.includes('lcac')) {
-                return 'galactic lcac';
-            }
-            // Строго точное совпадение для Galactic, чтобы отсеять VRF, ККБ, TH, REMAK
-            if (norm === 'galactic') {
-                return 'galactic';
-            }
+            if (norm.includes('побутові') || norm.includes('побытовые')) return 'побутові';
+            if (norm.includes('мультисистеми') || norm.includes('мультисистемы')) return 'мультисистеми';
+            if (norm.includes('напівпром') || norm.includes('полупром')) return 'напівпром';
+            if (norm.includes('galactic lcac') || norm.includes('galactic-lcac') || norm.includes('lcac')) return 'galactic lcac';
+            if (norm === 'galactic') return 'galactic';
             
-            return null; // Все остальные вкладки жестко отсекаются
+            return null;
         }
 
-        // Проверка: является ли строка НАСТОЯЩЕЙ маркировкой кондиционера
+        // Интеллектуальная проверка артикула климатической техники (внутренние блоки / сплиты / комплекты)
         function isValidModelCode(str) {
             if (!str || typeof str !== 'string') return false;
-            const s = str.trim();
-            if (s.length < 3 || s.length > 50) return false;
+            let s = str.trim();
+            if (s.length < 3 || s.length > 60) return false;
 
-            // Исключаем скобки с диапазоном мощности вроде (1,0 - 6,3) или (0.9-2.8)
+            // Исключаем диапазоны мощности в скобках
             if (/\(\s*\d+[\d\.,]*\s*[-–—]\s*\d+[\d\.,]*\s*\)/.test(s)) return false;
 
             const lower = s.toLowerCase();
-
-            // Запрещенные слова и заголовки
-            const forbidden = [
-                'підключення', 'настінний', 'касетний', 'стельовий', 'канальний',
-                'модель', 'тип', 'найменування', 'продуктивність', 'споживана',
-                'потужність', 'коефіцієнт', 'ціна', 'дилер', 'аксесуари',
-                'внутрішній', 'зовнішній', 'панель', 'пульт', 'комплект', 'інвертор',
-                'спліт', 'система', 'холод', 'тепло', 'серія', 'моделі', 'примітка',
-                'аксессуары', 'наименование', 'руб', 'грн', 'usd', 'eur', 'lcac'
+            const forbiddenWords = [
+                'підключення', 'настінний', 'касетний', 'стельовий', 'канальний', 'колонний',
+                'модель', 'тип', 'найменування', 'продуктивність', 'споживана', 'потужність',
+                'коефіцієнт', 'ціна', 'дилер', 'аксесуари', 'внутрішній', 'панель', 'пульт',
+                'комплект', 'інвертор', 'спліт', 'система', 'холод', 'тепло', 'серія', 'примітка',
+                'наименование', 'руб', 'грн', 'usd', 'eur', 'lcac', 'напольно'
             ];
 
-            for (const word of forbidden) {
+            for (const word of forbiddenWords) {
                 if (lower.includes(word)) return false;
             }
 
-            // Маркировка должна соответствовать паттерну артикула
-            const modelPattern = /^[A-Z]{2,6}[0-9]{1,3}[A-Z0-9\-\(\)\/]*$/i;
-            const cleanStr = s.replace(/\s+/g, '');
-            if (modelPattern.test(cleanStr)) return true;
-
-            // Сдвоенные модели
+            // Допускаем сплиты через '+' (например, SRK71ZR-W + FDC71VNX-W) или модельные ряды Mitsubishi / Galactic
             if (s.includes('+')) {
                 const parts = s.split('+').map(p => p.trim());
-                return parts.length === 2 && parts.every(p => modelPattern.test(p.replace(/\s+/g, '')));
+                // Проверяем, что первая часть — это внутренний блок (обычно начинается с SRK, GKZ, GBZ, GCZ и т.д.)
+                return parts.length >= 1 && parts.some(p => /^[A-Z]{2,6}[0-9]/i.test(p));
             }
 
-            return false;
+            // Строгий паттерн для моделей кондиционеров
+            const modelRegex = /^[A-Z]{2,6}[0-9]{1,3}[A-Z0-9\-\(\)\/\.]*$/i;
+            const clean = s.replace(/\s+/g, '');
+            return modelRegex.test(clean);
         }
 
-        function sanitizeModelName(str) {
+        function cleanModelName(str) {
             if (!str) return '';
-            let cleaned = str.trim();
-            cleaned = cleaned.replace(/\(внутр\.\s*\+\s*пульт.*?\)/gi, '');
-            cleaned = cleaned.replace(/\(зовніш\..*?\)/gi, '');
-            cleaned = cleaned.replace(/внутр\.?\s*|\s*зовніш\.?/gi, '');
-            cleaned = cleaned.replace(/панель.*$/gi, '');
-            cleaned = cleaned.replace(/"[^"]*"/g, '');
-            return cleaned.trim();
+            let s = str.trim();
+            // Убираем технические хвосты в скобках, оставляя саму маркировку
+            s = s.replace(/\(внутр\..*?\)/gi, '');
+            s = s.replace(/\(зовніш\..*?\)/gi, '');
+            return s.trim();
         }
 
-        function extractPriceFromRow(cells) {
-            const numericCandidates = [];
-            
-            for (let i = 0; i < cells.length; i++) {
-                const raw = cells[i];
-                if (!raw) continue;
-                const cleaned = String(raw).replace(/\s/g, '').replace(',', '.');
-                const num = parseFloat(cleaned);
-                
-                if (!isNaN(num) && isFinite(num) && num > 0) {
-                    numericCandidates.push({ val: num, raw: String(raw).trim(), colIdx: i });
-                } else if (cleaned.toLowerCase().includes('зазапитом') || cleaned.toLowerCase().includes('запросом')) {
-                    return 'За запитом';
-                }
-            }
-
-            if (numericCandidates.length === 0) return null;
-
-            // Цены обычно находятся в крайних правых колонках (colIdx >= 5)
-            const priceCandidates = numericCandidates.filter(c => c.colIdx >= 5 && c.val >= 50);
-
-            if (priceCandidates.length === 0) {
-                return numericCandidates[numericCandidates.length - 1].raw;
-            }
-
-            return priceCandidates[priceCandidates.length - 1].raw;
-        }
-
-        // Парсинг файла Excel строго для 5 категорий с учетом структуры LCAC
+        // Интеллектуальный анализ колонок по их заголовкам (шапке таблицы)
         function parseExcelArrayBuffer(buffer) {
             const workbook = XLSX.read(buffer, { type: 'array' });
             
@@ -365,47 +318,73 @@
                 if (!rawRows || rawRows.length === 0) return;
 
                 const category = canonicalMap[catKey];
+
+                // Ищем индексы колонок "Модель/Найменування" и "Ціна" по шапке таблицы (первые 5 строк)
+                let modelColIdx = 0;
+                let priceColIdx = -1;
+
+                for (let r = 0; r < Math.min(6, rawRows.length); r++) {
+                    const row = rawRows[r];
+                    for (let c = 0; c < row.length; c++) {
+                        const cellVal = String(row[c]).toLowerCase().trim();
+                        if (cellVal.includes('модель') || cellVal.includes('маркировка') || cellVal.includes('позначення') || cellVal.includes('найменування')) {
+                            modelColIdx = c;
+                        }
+                        if (cellVal.includes('ціна') || cellVal.includes('цена') || cellVal.includes('usd') || cellVal.includes('eur')) {
+                            priceColIdx = c;
+                        }
+                    }
+                }
+
+                // Если в шапке явно не нашли цену, ищем правую колонку с числовыми значениями
                 let lastValidPrice = null;
 
-                rawRows.forEach((row) => {
-                    if (!Array.isArray(row)) return;
-                    const cells = row.map(cell => String(cell).trim());
-                    if (cells.every(c => c === '')) return;
+                rawRows.forEach((row, rowIndex) => {
+                    if (!Array.isArray(row) || rowIndex < 2) return; // Пропускаем шапку
 
-                    // Проверяем цену в текущей строке
-                    const rowPrice = extractPriceFromRow(cells);
-                    if (rowPrice && rowPrice !== 'За запитом') {
-                        lastValidPrice = rowPrice;
+                    const modelCell = String(row[modelColIdx] || '').trim();
+                    if (!modelCell) {
+                        // Проверяем соседние колонки слева
+                        for (let c = 0; c < row.length; c++) {
+                            if (isValidModelCode(String(row[c]))) {
+                                modelColIdx = c;
+                                break;
+                            }
+                        }
                     }
 
-                    if (catKey === 'напівпром' || catKey === 'galactic lcac') {
-                        // Для LCAC и Напівпром главная маркировка комплекта идет в первой колонке (индекс 0)
-                        let modelCandidate = cells[0];
-                        
-                        if (isValidModelCode(modelCandidate)) {
-                            const cleanModel = sanitizeModelName(modelCandidate);
-                            const priceToUse = rowPrice || lastValidPrice;
-                            
-                            if (priceToUse && cleanModel) {
-                                if (!category.items.some(it => it.model === cleanModel)) {
-                                    category.items.push({ model: cleanModel, basePrice: priceToUse });
-                                }
-                            }
-                        }
-                    } else {
-                        let modelCandidate = cells[0];
-                        if (!isValidModelCode(modelCandidate) && cells[1] && isValidModelCode(cells[1])) {
-                            modelCandidate = cells[1];
-                        }
+                    const foundModelRaw = String(row[modelColIdx] || '').trim();
+                    if (!isValidModelCode(foundModelRaw)) return;
 
-                        if (isValidModelCode(modelCandidate)) {
-                            const cleanModel = sanitizeModelName(modelCandidate);
-                            const price = rowPrice || lastValidPrice;
-                            if (price && cleanModel) {
-                                if (!category.items.some(it => it.model === cleanModel)) {
-                                    category.items.push({ model: cleanModel, basePrice: price });
-                                }
+                    // Извлекаем цену
+                    let foundPrice = null;
+                    if (priceColIdx !== -1 && row[priceColIdx]) {
+                        const pStr = String(row[priceColIdx]).replace(/\s/g, '').replace(',', '.');
+                        const pNum = parseFloat(pStr);
+                        if (!isNaN(pNum) && pNum > 0) {
+                            foundPrice = String(row[priceColIdx]).trim();
+                        }
+                    }
+
+                    // Если по колонке цены не нашли, ищем в крайних правых столбцах
+                    if (!foundPrice) {
+                        for (let c = row.length - 1; c >= 0; c--) {
+                            const val = String(row[c]).replace(/\s/g, '').replace(',', '.');
+                            const num = parseFloat(val);
+                            if (!isNaN(num) && num >= 50) {
+                                foundPrice = String(row[c]).trim();
+                                break;
                             }
+                        }
+                    }
+
+                    if (foundPrice) lastValidPrice = foundPrice;
+                    const priceToUse = foundPrice || lastValidPrice;
+
+                    if (priceToUse && foundModelRaw) {
+                        const cleaned = cleanModelName(foundModelRaw);
+                        if (cleaned && !category.items.some(it => it.model === cleaned)) {
+                            category.items.push({ model: cleaned, basePrice: priceToUse });
                         }
                     }
                 });
@@ -431,7 +410,7 @@
                         updateStatus(`Загружен: ${file.name}`);
                         showCustomToast('Прайс-лист успешно обновлен!', 'success');
                     } else {
-                        showCustomToast('Не удалось извлечь данные из 5 вкладок', 'error');
+                        showCustomToast('Не удалось распознать маркировки в файле', 'error');
                     }
                 } catch (err) {
                     showCustomToast('Ошибка при чтении Excel', 'error');
@@ -440,23 +419,12 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // Отрисовка СТРОГО 5 плиток категорий
         function renderTiles() {
             const container = document.getElementById('tiles-container');
             const countBadge = document.getElementById('categories-count');
             container.innerHTML = '';
 
             countBadge.innerText = `${categoriesData.length} вкладок`;
-
-            if (categoriesData.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-2 bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 shadow-xs">
-                        <p class="font-bold text-slate-700 text-sm">Данные прайса не загружены</p>
-                        <p class="text-xs mt-1 text-slate-400">Загрузите файл price.xlsx</p>
-                    </div>
-                `;
-                return;
-            }
 
             categoriesData.forEach((category, idx) => {
                 const itemCount = category.items.length;
@@ -508,7 +476,6 @@
             document.getElementById('tiles-view').classList.remove('hidden');
         }
 
-        // Чистая отрисовка таблицы: Маркировка — Цена
         function renderTables(items) {
             const container = document.getElementById('tables-container');
             const emptyState = document.getElementById('empty-state');
@@ -627,7 +594,6 @@
             document.getElementById('toast-banner').classList.add('hidden');
         }
 
-        // Демонстрационные данные строго для 5 категорий
         function loadFallbackData() {
             categoriesData = [
                 { 
@@ -635,7 +601,6 @@
                     title: "Побутові", 
                     colorClass: CATEGORY_CONFIGS[0].color, 
                     items: [ 
-                        { model: "SRK50HE-S1", basePrice: "610" },
                         { model: "SRK20ZSPR-S", basePrice: "525" }, 
                         { model: "SRK25ZSPR-S", basePrice: "560" }, 
                         { model: "SRK35ZSPR-S", basePrice: "650" }
@@ -674,20 +639,10 @@
                     colorClass: CATEGORY_CONFIGS[4].color, 
                     items: [ 
                         { model: "GBZ18MLQ-W", basePrice: "1 040" }, 
-                        { model: "GBZ18MLQT-W", basePrice: "1 040" },
                         { model: "GBZ24MLQ-W", basePrice: "1 300" },
-                        { model: "GBZ24MLNQ7-W", basePrice: "1 300" },
                         { model: "GBZ36MLQ-W", basePrice: "1 690" },
-                        { model: "GBZ36MLQ-W", basePrice: "1 865" },
-                        { model: "GBZ48ML(Q)-W", basePrice: "2 175" },
-                        { model: "GBZ60ML-W", basePrice: "2 265" },
                         { model: "GCZ18MLQ-W", basePrice: "1 080" },
-                        { model: "GCZ24MLQ-W", basePrice: "1 350" },
-                        { model: "GCZ36MLQ-W", basePrice: "1 750" },
-                        { model: "GCZ48MLQ-W", basePrice: "2 250" },
-                        { model: "GHZ18MLQ-W", basePrice: "1 120" },
-                        { model: "GHZ24MLQ-W", basePrice: "1 390" },
-                        { model: "GHZ36MLQ-W", basePrice: "1 810" }
+                        { model: "GHZ18MLQ-W", basePrice: "1 120" }
                     ] 
                 }
             ];
