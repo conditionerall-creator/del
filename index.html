@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Прайс-лист САН-АЙС</title>
+    <title>Прайс-лист дилера | Кліматичні системи</title>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- SheetJS для обработки Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,8 +15,29 @@
         tailwind.config = {
             theme: {
                 extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b',
+                        },
+                        tealMint: {
+                            bg: '#e6f7f2',
+                            border: '#c2ebdf',
+                            badge: '#d4f2ea',
+                            text: '#0d7d6c'
+                        }
+                    },
                     fontFamily: {
-                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'ios': '0 2px 8px -1px rgba(0, 0, 0, 0.05), 0 1px 3px -1px rgba(0, 0, 0, 0.03)',
+                        'ios-elevated': '0 8px 24px -4px rgba(16, 24, 40, 0.08)'
                     }
                 }
             }
@@ -24,12 +45,14 @@
     </script>
 
     <style>
-        /* Поддержка безопасных зон для iOS */
         body {
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
             -webkit-tap-highlight-color: transparent;
         }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .fade-in {
             animation: fadeIn 0.2s ease-out;
@@ -38,154 +61,262 @@
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
         @media print {
-            header, footer, .no-print { display: none !important; }
+            header, footer, nav, .no-print { display: none !important; }
             body { background: white !important; color: black !important; }
             .print-full-width { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-teal-500 selection:text-white">
 
-    <!-- Шапка приложения -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
-        <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
-            <!-- Логотип и заголовок -->
-            <div class="flex items-center gap-2 sm:gap-3 cursor-pointer shrink-0" onclick="goBack()">
-                <div class="bg-blue-600 p-2 sm:p-2.5 rounded-xl text-white shadow-sm flex items-center justify-center shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 sm:w-5 sm:h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                    </svg>
+    <!-- Главный мобильный контейнер (с центированием на ПК и нативной шириной на смартфоне) -->
+    <div class="w-full max-w-[440px] mx-auto min-h-screen bg-[#fcfdfd] flex flex-col shadow-2xl relative border-x border-slate-100">
+
+        <header class="pt-4 px-5 pb-3 bg-white/95 sticky top-0 z-30 backdrop-blur-md border-b border-slate-100" data-purpose="screen-header">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="goBack()">
+                    <img alt="SUN ICE Logo" class="h-10 w-auto object-contain rounded-lg shadow-sm border border-slate-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXJFhytJc1eREoc3xxdhyOye2qiRxZp5_kCdZVsVH6vmeEBE-PMmw6U4HGfdkrESmoyFaRV5bjrRhqHI2Jj1ERaDUYHfnsGiQD-JPIvKsAYT4SZwFvhPywrSmvYxR2d_8h_l-PlOl5ESnchKCaO0nw9XBJheMyUtA9tW4JiLuMs8ILbLGyKjqVaNx4vYP6FDXz2xhSM_zkPFGKM_XJNlXZpRGN1Kqjno2UlHWS4Ly8QdHpveAonM-KmzCVnOcU-Nd_">
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight text-slate-900 leading-tight">Прайс-лист</h1>
+                        <p id="cache-status" class="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Кліматичне обладнання</p>
+                    </div>
                 </div>
-                <div class="leading-tight">
-                    <h1 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">САН-АЙС Прайс</h1>
-                    <p id="cache-status" class="text-[10px] sm:text-xs text-slate-400 font-medium">Загрузка данных...</p>
+
+                <!-- Управление: Валюта, Синхронизация, Загрузка Excel -->
+                <div class="flex items-center space-x-2">
+                    <!-- Переключатель валют -->
+                    <div class="inline-flex items-center rounded-xl bg-slate-100 p-0.5 text-xs font-bold text-slate-600 border border-slate-200">
+                        <button id="curr-usd" onclick="setCurrency('USD')" class="px-2 py-1.5 rounded-lg transition-all bg-white text-teal-600 shadow-xs">USD</button>
+                        <button id="curr-uah" onclick="setCurrency('UAH')" class="px-2 py-1.5 rounded-lg transition-all hover:text-slate-900">UAH</button>
+                        <button id="curr-eur" onclick="setCurrency('EUR')" class="px-2 py-1.5 rounded-lg transition-all hover:text-slate-900">EUR</button>
+                    </div>
+
+                    <!-- Кнопка обновления из price.xlsx -->
+                    <button onclick="checkOnlinePrice(true)" id="refreshBtn" title="Оновити з файлу price.xlsx" class="w-9 h-9 rounded-xl border border-slate-200/90 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-900 active:scale-95 transition-all shadow-sm group" type="button">
+                        <svg id="sync-icon" class="w-4 h-4 text-slate-600 group-hover:rotate-180 transition-transform duration-500 ease-out" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Загрузка собственного Excel файла -->
+                    <label class="cursor-pointer w-9 h-9 text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center" title="Завантажити власний Excel">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
+                    </label>
+                </div>
+            </div>
+        </header>
+
+        <div id="toast-banner" class="hidden px-5 mt-3 no-print z-50">
+            <div id="toast-content" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm fade-in">
+                <span id="toast-message">Дані оновлено!</span>
+                <button onclick="dismissToast()" class="text-emerald-700 font-bold ml-2">✕</button>
+            </div>
+        </div>
+
+        <main class="flex-1 px-5 pt-3.5 pb-24 space-y-4">
+
+            <!-- ЭКРАН 1: Плитки категорий, поиск, дилерская скидка -->
+            <div id="tiles-view" class="space-y-4 fade-in">
+                
+                <!-- Панель дилерской скидки -->
+                <section class="bg-[#e4f7f1]/80 border border-[#bce8dc] rounded-2xl p-3.5 shadow-sm" data-purpose="dealer-discount-panel">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-2.5 w-2.5 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+                            </span>
+                            <div>
+                                <span class="text-sm font-semibold text-slate-800">Знижка дилера</span>
+                                <span class="block text-[10px] text-slate-500 font-normal">Автоматичний перерахунок цін</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center bg-white border border-[#bfe7db] rounded-xl px-2.5 py-1 shadow-inner focus-within:ring-2 focus-within:ring-teal-500">
+                            <input aria-label="Відсоток дилерської знижки" class="w-10 text-right font-bold text-slate-800 text-base p-0 border-0 focus:ring-0 focus:outline-none bg-transparent" id="dealerDiscountInput" max="90" min="0" type="number" value="0" oninput="updateDiscount(this.value)">
+                            <span class="text-slate-500 font-semibold text-sm ml-1 select-none">%</span>
+                        </div>
+                    </div>
+                    <div class="mt-2.5 pt-2 border-t border-[#cceee3] flex items-center justify-between text-[11px]">
+                        <span class="inline-flex items-center gap-1 font-semibold text-teal-800">
+                            <svg class="w-3.5 h-3.5 text-amber-500 fill-amber-400" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                            Дилерський рівень
+                        </span>
+                        <span class="text-teal-700 font-medium bg-white/70 px-2 py-0.5 rounded-md border border-[#bfe7db]" id="discount-badge-status">Без знижки</span>
+                    </div>
+                </section>
+
+                <!-- Статус и таймстамп -->
+                <section class="flex items-center justify-between text-xs text-slate-400 px-0.5">
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                        </svg>
+                        <span id="last-update-label">Оновлено автоматично</span>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        Актуально
+                    </span>
+                </section>
+
+                <!-- Поиск на главном экране -->
+                <section class="space-y-2.5 pt-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+                        </div>
+                        <input id="global-search-input" oninput="handleGlobalSearch(this.value)" class="block w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm" placeholder="Шукати модель у всіх розділах..." type="search">
+                    </div>
+                </section>
+
+                <!-- Сетка категорий (Строго 5 разделов) -->
+                <section class="pt-1" data-purpose="category-grid">
+                    <div class="flex items-center justify-between mb-2.5 px-0.5">
+                        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Категорії прайсу</h2>
+                        <span id="categories-count-badge" class="text-xs text-teal-700 font-medium">5 розділів</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3" id="tiles-container">
+                        <!-- Динамическая вставка карточек категорий -->
+                    </div>
+                </section>
+
+                <!-- Курс валют -->
+                <section class="bg-slate-50 rounded-xl p-3 border border-slate-200/60 flex items-center justify-between text-xs text-slate-500">
+                    <span class="flex items-center gap-1.5 font-medium text-slate-700">
+                        <span class="w-2 h-2 rounded-full bg-teal-500"></span>
+                        Курс: 1 USD = 41.5 грн
+                    </span>
+                    <span class="text-teal-700 font-semibold text-xs">SUN-ICE B2B</span>
+                </section>
+            </div>
+
+            <!-- ЭКРАН 2: Табличный просмотр выбранной категории -->
+            <div id="table-view" class="hidden flex-col gap-4 fade-in">
+                
+                <!-- Верхняя навигация таблицы -->
+                <div class="flex items-center justify-between gap-2 no-print">
+                    <button onclick="goBack()" class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 py-2.5 px-3.5 rounded-xl shadow-xs active:scale-95 transition-all hover:bg-slate-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                        </svg>
+                        Усі категорії
+                    </button>
+
+                    <div class="relative w-full sm:w-48">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="search-input" onkeyup="filterTable()" class="block w-full p-2.5 pl-9 text-xs sm:text-sm text-slate-900 bg-white rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 shadow-xs outline-none" placeholder="Фільтр...">
+                    </div>
+                </div>
+
+                <!-- Шапка активной категории -->
+                <div class="flex items-center gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div id="category-icon" class="p-2.5 rounded-xl text-white shadow-xs bg-teal-600 shrink-0 flex items-center justify-center font-bold text-sm w-10 h-10">
+                        ПО
+                    </div>
+                    <div class="overflow-hidden">
+                        <h2 id="category-title" class="text-base font-bold text-slate-900 truncate">Категорія</h2>
+                        <p id="category-stats" class="text-[11px] text-slate-400 font-medium">0 моделей</p>
+                    </div>
+                </div>
+
+                <!-- Таблица маркировок и цен -->
+                <div id="tables-container" class="space-y-4">
+                    <!-- Таблицы рендерятся динамически -->
+                </div>
+
+                <!-- Пустое состояние -->
+                <div id="empty-state" class="hidden flex-col items-center justify-center p-8 bg-white border border-slate-200 rounded-2xl text-slate-400 text-center">
+                    <p class="text-sm font-semibold text-slate-600">Маркування не знайдено</p>
+                    <p class="text-xs mt-0.5">Спробуйте змінити пошуковий запит</p>
                 </div>
             </div>
 
-            <!-- Валюты, Обновление и Загрузка Excel -->
-            <div class="flex items-center gap-1.5 sm:gap-2">
-                <!-- Переключатель валют -->
-                <div class="inline-flex items-center rounded-lg bg-slate-100 p-0.5 text-xs font-bold text-slate-600 border border-slate-200">
-                    <button id="curr-usd" onclick="setCurrency('USD')" class="px-2 py-1 rounded-md transition-all bg-white text-blue-600 shadow-xs">USD</button>
-                    <button id="curr-uah" onclick="setCurrency('UAH')" class="px-2 py-1 rounded-md transition-all hover:text-slate-900">UAH</button>
-                    <button id="curr-eur" onclick="setCurrency('EUR')" class="px-2 py-1 rounded-md transition-all hover:text-slate-900">EUR</button>
-                </div>
+        </main>
 
-                <!-- Кнопка синхронизации -->
-                <button onclick="checkOnlinePrice(true)" title="Обновить из файла price.xlsx" class="p-2 text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all border border-slate-200 active:scale-95">
-                    <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
-
-                <!-- Загрузка собственного Excel -->
-                <label class="cursor-pointer p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-all active:scale-95 flex items-center justify-center" title="Загрузить Excel файл">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                    <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
-                </label>
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white/95 backdrop-blur-lg border-t border-slate-200/80 px-4 py-2 z-40 no-print" data-purpose="bottom-navigation-bar">
+            <div class="flex items-center justify-around">
+                <a class="flex flex-col items-center justify-center flex-1 text-teal-600 font-medium py-1 cursor-pointer" onclick="goBack()">
+                    <svg class="w-5 h-5 stroke-[2.2]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <span class="text-[10px] mt-1 font-bold">Прайс</span>
+                </a>
+                <a class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-700 py-1 transition-colors cursor-pointer" onclick="showCustomToast('Розділ складу у синхронізації', 'warning')">
+                    <svg class="w-5 h-5 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <span class="text-[10px] mt-1 font-medium">Склад</span>
+                </a>
+                <a class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-700 py-1 transition-colors relative cursor-pointer" onclick="showCustomToast('Кошик замовлень порожній', 'warning')">
+                    <span class="absolute top-0.5 right-6 w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <svg class="w-5 h-5 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <span class="text-[10px] mt-1 font-medium">Замовлення</span>
+                </a>
+                <a class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-700 py-1 transition-colors cursor-pointer" onclick="showCustomToast('Авторизовано як Дилер B2B', 'success')">
+                    <svg class="w-5 h-5 stroke-[1.8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                    <span class="text-[10px] mt-1 font-medium">Кабінет</span>
+                </a>
             </div>
-        </div>
-    </header>
+        </nav>
 
-    <!-- Уведомления Toast -->
-    <div id="toast-banner" class="hidden max-w-5xl mx-auto px-3 sm:px-6 mt-3 no-print">
-        <div id="toast-content" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl flex items-center justify-between text-xs shadow-xs fade-in">
-            <span id="toast-message">Данные обновлены!</span>
-            <button onclick="dismissToast()" class="text-emerald-700 font-bold ml-2">✕</button>
-        </div>
     </div>
 
-    <!-- Основной контент -->
-    <main class="flex-grow max-w-5xl mx-auto w-full px-3 sm:px-6 py-4 print-full-width">
-        
-        <!-- ЭКРАН 1: Сетка категорий (Строго 5 плиток) -->
-        <div id="tiles-view" class="fade-in">
-            <div class="flex items-center justify-between gap-2 mb-4">
-                <div>
-                    <h2 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Категории оборудования</h2>
-                </div>
-                <span id="categories-count" class="text-xs font-bold px-2.5 py-1 bg-slate-200/80 text-slate-700 rounded-lg">5 вкладок</span>
-            </div>
-            
-            <!-- Плитки категорий -->
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5" id="tiles-container">
-                <!-- Генерация 5 плиток через JS -->
-            </div>
-        </div>
-
-        <!-- ЭКРАН 2: Таблица маркировок и цен -->
-        <div id="table-view" class="hidden flex-col gap-4 fade-in">
-            <!-- Верхняя панель -->
-            <div class="flex flex-col sm:flex-row gap-2.5 justify-between items-stretch sm:items-center no-print">
-                <button onclick="goBack()" class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 py-2.5 px-3.5 rounded-xl shadow-xs active:scale-95 transition-all hover:bg-slate-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                    </svg>
-                    Все категории
-                </button>
-
-                <div class="relative w-full sm:w-72">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    <input type="text" id="search-input" onkeyup="filterTable()" class="block w-full p-2.5 pl-9 text-xs sm:text-sm text-slate-900 bg-white rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 shadow-xs outline-none" placeholder="Поиск маркировки...">
-                </div>
-            </div>
-
-            <!-- Шапка выбранной категории -->
-            <div class="flex items-center gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-xs">
-                <div id="category-icon" class="p-2.5 rounded-lg text-white shadow-xs bg-blue-600 shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                </div>
-                <div class="overflow-hidden">
-                    <h2 id="category-title" class="text-base sm:text-lg font-bold text-slate-900 truncate">Категория</h2>
-                    <p id="category-stats" class="text-[11px] sm:text-xs text-slate-400 font-medium">0 моделей</p>
-                </div>
-            </div>
-
-            <!-- Таблица с ЧИСТО Маркировкой и Ценой -->
-            <div id="tables-container" class="space-y-4">
-                <!-- Таблица создается JS -->
-            </div>
-
-            <!-- Пустое состояние -->
-            <div id="empty-state" class="hidden flex-col items-center justify-center p-8 bg-white border border-slate-200 rounded-xl text-slate-400">
-                <p class="text-sm font-semibold text-slate-600">Маркировка не найдена</p>
-                <p class="text-xs mt-0.5">Попробуйте ввести другие символы</p>
-            </div>
-        </div>
-    </main>
-
-    <footer class="bg-white border-t border-slate-200 mt-auto no-print">
-        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between text-[11px] text-slate-400">
-            <div>&copy; 2026 САН-АЙС Прайс</div>
-            <div class="flex items-center gap-1 font-medium text-emerald-600">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Готово
-            </div>
-        </div>
-    </footer>
-
     <script>
-        const CACHE_KEY = 'san_ice_price_exact5_v5';
+        const CACHE_KEY = 'sun_ice_price_exact5_v6';
         const ONLINE_FILE_PATH = './price.xlsx';
 
         const EXCHANGE_RATES = { USD: 1.0, UAH: 41.5, EUR: 0.92 };
         const CURRENCY_SYMBOLS = { USD: '$', UAH: 'грн', EUR: '€' };
 
-        // СТРОГО 5 разрешенных категорий
+        // СТРОГО 5 категорий слитные с красивым визуалом из вашего дизайна
         const CATEGORY_CONFIGS = [
-            { id: 'побутові', title: 'Побутові', color: 'bg-gradient-to-br from-blue-600 to-cyan-500' },
-            { id: 'мультисистеми', title: 'Мультисистеми', color: 'bg-gradient-to-br from-indigo-600 to-violet-500' },
-            { id: 'напівпром', title: 'Напівпром', color: 'bg-gradient-to-br from-emerald-600 to-teal-500' },
-            { id: 'galactic', title: 'Galactic', color: 'bg-gradient-to-br from-amber-500 to-orange-500' },
-            { id: 'galactic lcac', title: 'Galactic LCAC', color: 'bg-gradient-to-br from-rose-600 to-pink-500' }
+            { 
+                id: 'побутові', 
+                title: 'Побутові', 
+                code: 'ПО', 
+                subtitle: 'Спліт-системи', 
+                badge: '48 мод.', 
+                image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgCnO2xuHyFSAAgUnJ97_0a-wQC5bImGy8h0tzRjvVClIScDTyE-3TwynCjjHDEoyZkq1JzrPr7sw1s_8m5fsClgOyeqPfZZsrkpxn9jq__IN6ZBredFPcBd52ymN_c07JtyvxkSJbG897pG3xBnGXNtB8zNS8YSTlrQ_KAHp2Gs8QaLFN_r7U08KkaI0-ghhrrbbxIXQkqKi7TMYrRY1oxc5tMenbWQJxjW_M2ckjEhaT80nh_Tg'
+            },
+            { 
+                id: 'мультисистеми', 
+                title: 'Мультисистеми', 
+                code: 'МУ', 
+                subtitle: 'Free Match', 
+                badge: '26 мод.', 
+                image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAHV-eLgrUqkf690ibrnh8u1MRCkrIa2jTxFySrOIjc-TmO48aLBnL8C6z1enTzWEJWJqICJcYUg8Z0OzNHQdyby2v2Op00NibIMc4uBVJ8MTxZyEbHSS56BWx2vUOk4bY7_JW4Tm7bz2DWgcdJGfp1vxQyHkkgPuQiUSK_zLhdk-3EUO7dRII6WFF30eOzn_2WJhSEmizl2dX_d77vEEdc5XJIp8tlAwdAPea4FN5-a5pir93woGc'
+            },
+            { 
+                id: 'напівпром', 
+                title: 'Напівпром', 
+                code: 'НА', 
+                subtitle: 'Касетні, канальні', 
+                badge: '34 мод.', 
+                image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD8StOr8SawFWroNVlt9bRBNSoVBrwNRih2SVam6RflzUo2cvjt9smCbCb5HunOaiZ-yTW5DaZv4KRXy-45uwg_bHSQrb6R2OKh0TaqC9ovC8G029cr1nZUAq9sB17y5UpF8WcBH2GKUMbX3VFDkrGbQ9RUqOBdFLAc1x2viIt23RbAo_GFPPorFWpDjd6o3RdxA1CIJa2QhCCm1ry8CpcTgBKjL6LtQYZUG0ZBnevh31IvRSC8gh0'
+            },
+            { 
+                id: 'galactic', 
+                title: 'Galactic', 
+                code: 'GA', 
+                subtitle: 'Брендова лінійка', 
+                badge: 'Хіт сезону', 
+                image: 'https://lh3.googleusercontent.com/aida/AEtjO1WmEMpvtvkLgExH9tiXzTjKfLlg-86DG2NcmwTBVcUVq2AM02Yt1E4C3MqclU-qvONX7hZrv-vTDJZaLAWfUtgU5Ubaa3Rm7saxN3fbqsccP5T9bGYUQ5xBrQBKHpxGww1oGm1rGFg6YtqmZyK1S6qYgBm7nK5AG-ZzRGDrFHs4KJ1oAew2H_SqbJ9WYnpbk9fSzGftwsb9BhvtdvOqM0rI2m0H9fAI5zUC0W8xY4OZErLQH0LracS8HQ'
+            },
+            { 
+                id: 'galactic lcac', 
+                title: 'Galactic LCAC', 
+                code: 'GA', 
+                subtitle: 'Комерційна серія', 
+                badge: 'Склад Київ', 
+                image: 'https://lh3.googleusercontent.com/aida/AEtjO1UVN8a-ej0pmJxeHIzDISLbN3laaDyl-V1geqQ5HKGLJTKI78kpR5qg6ZMvUY5J48nC_5U2RISJs62_LuU1IprrFBa0p_wZEFeEdSMQ9GfDB8jL6-wwGlvM_l0TH6pLqvtwpNP6-izkWndCjo2LS2a20AWHx59ZBcSNJtr0oovQSp4y4M2piJC8Nz7F6Eb91SnX9zY0s1dw4rLtP1r6kF0O9P8jsK7Viok3orl8GByty7iHICh1t1qYeg'
+            }
         ];
 
         let categoriesData = [];
         let currentCategoryIndex = null;
         let selectedCurrency = 'USD';
+        let dealerDiscount = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
@@ -199,7 +330,7 @@
                     categoriesData = parsed.data || [];
                     if (categoriesData.length === 0) loadFallbackData();
                     else renderTiles();
-                    updateStatus(`Кэш от: ${parsed.timestamp}`);
+                    document.getElementById('last-update-label').innerText = `Кеш: ${parsed.timestamp}`;
                 } catch (e) {
                     loadFallbackData();
                 }
@@ -217,7 +348,7 @@
             try {
                 const response = await fetch(ONLINE_FILE_PATH + '?t=' + new Date().getTime(), { cache: 'no-cache' });
                 if (!response.ok) {
-                    if (isManual) showCustomToast('Файл price.xlsx не найден', 'warning');
+                    if (isManual) showCustomToast('Файл price.xlsx не знайдено', 'warning');
                     return;
                 }
 
@@ -225,16 +356,16 @@
                 const newCategories = parseExcelArrayBuffer(arrayBuffer);
 
                 if (newCategories && newCategories.length > 0) {
-                    const timestamp = new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    const timestamp = new Date().toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                     localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp, data: newCategories }));
                     categoriesData = newCategories;
                     renderTiles();
                     if (currentCategoryIndex !== null) openCategory(currentCategoryIndex);
-                    updateStatus(`Обновлено: ${timestamp}`);
-                    if (isManual) showCustomToast('Прайс успешно обновлен!', 'success');
+                    document.getElementById('last-update-label').innerText = `Оновлено: ${timestamp}`;
+                    if (isManual) showCustomToast('Прайс успішно синхронізовано!', 'success');
                 }
             } catch (err) {
-                if (isManual) showCustomToast('Ошибка обновления файла', 'error');
+                if (isManual) showCustomToast('Помилка завантаження price.xlsx', 'error');
             } finally {
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
             }
@@ -253,13 +384,10 @@
             return null;
         }
 
-        // Интеллектуальная проверка артикула климатической техники (внутренние блоки / сплиты / комплекты)
         function isValidModelCode(str) {
             if (!str || typeof str !== 'string') return false;
             let s = str.trim();
             if (s.length < 3 || s.length > 60) return false;
-
-            // Исключаем диапазоны мощности в скобках
             if (/\(\s*\d+[\d\.,]*\s*[-–—]\s*\d+[\d\.,]*\s*\)/.test(s)) return false;
 
             const lower = s.toLowerCase();
@@ -267,22 +395,18 @@
                 'підключення', 'настінний', 'касетний', 'стельовий', 'канальний', 'колонний',
                 'модель', 'тип', 'найменування', 'продуктивність', 'споживана', 'потужність',
                 'коефіцієнт', 'ціна', 'дилер', 'аксесуари', 'внутрішній', 'панель', 'пульт',
-                'комплект', 'інвертор', 'спліт', 'система', 'холод', 'тепло', 'серія', 'примітка',
-                'наименование', 'руб', 'грн', 'usd', 'eur', 'lcac', 'напольно'
+                'комплект', 'інвертор', 'спліт', 'система', 'холод', 'тепло', 'серія', 'примітка'
             ];
 
             for (const word of forbiddenWords) {
                 if (lower.includes(word)) return false;
             }
 
-            // Допускаем сплиты через '+' (например, SRK71ZR-W + FDC71VNX-W) или модельные ряды Mitsubishi / Galactic
             if (s.includes('+')) {
                 const parts = s.split('+').map(p => p.trim());
-                // Проверяем, что первая часть — это внутренний блок (обычно начинается с SRK, GKZ, GBZ, GCZ и т.д.)
                 return parts.length >= 1 && parts.some(p => /^[A-Z]{2,6}[0-9]/i.test(p));
             }
 
-            // Строгий паттерн для моделей кондиционеров
             const modelRegex = /^[A-Z]{2,6}[0-9]{1,3}[A-Z0-9\-\(\)\/\.]*$/i;
             const clean = s.replace(/\s+/g, '');
             return modelRegex.test(clean);
@@ -291,22 +415,20 @@
         function cleanModelName(str) {
             if (!str) return '';
             let s = str.trim();
-            // Убираем технические хвосты в скобках, оставляя саму маркировку
             s = s.replace(/\(внутр\..*?\)/gi, '');
             s = s.replace(/\(зовніш\..*?\)/gi, '');
             return s.trim();
         }
 
-        // Интеллектуальный анализ колонок по их заголовкам (шапке таблицы)
         function parseExcelArrayBuffer(buffer) {
             const workbook = XLSX.read(buffer, { type: 'array' });
             
             const canonicalMap = {
-                'побутові': { id: 'побутові', title: 'Побутові', colorClass: CATEGORY_CONFIGS[0].color, items: [] },
-                'мультисистеми': { id: 'мультисистеми', title: 'Мультисистеми', colorClass: CATEGORY_CONFIGS[1].color, items: [] },
-                'напівпром': { id: 'напівпром', title: 'Напівпром', colorClass: CATEGORY_CONFIGS[2].color, items: [] },
-                'galactic': { id: 'galactic', title: 'Galactic', colorClass: CATEGORY_CONFIGS[3].color, items: [] },
-                'galactic lcac': { id: 'galactic lcac', title: 'Galactic LCAC', colorClass: CATEGORY_CONFIGS[4].color, items: [] }
+                'побутові': { id: 'побутові', title: 'Побутові', items: [] },
+                'мультисистеми': { id: 'мультисистеми', title: 'Мультисистеми', items: [] },
+                'напівпром': { id: 'напівпром', title: 'Напівпром', items: [] },
+                'galactic': { id: 'galactic', title: 'Galactic', items: [] },
+                'galactic lcac': { id: 'galactic lcac', title: 'Galactic LCAC', items: [] }
             };
 
             workbook.SheetNames.forEach((sheetName) => {
@@ -318,8 +440,6 @@
                 if (!rawRows || rawRows.length === 0) return;
 
                 const category = canonicalMap[catKey];
-
-                // Ищем индексы колонок "Модель/Найменування" и "Ціна" по шапке таблицы (первые 5 строк)
                 let modelColIdx = 0;
                 let priceColIdx = -1;
 
@@ -327,7 +447,7 @@
                     const row = rawRows[r];
                     for (let c = 0; c < row.length; c++) {
                         const cellVal = String(row[c]).toLowerCase().trim();
-                        if (cellVal.includes('модель') || cellVal.includes('маркировка') || cellVal.includes('позначення') || cellVal.includes('найменування')) {
+                        if (cellVal.includes('модель') || cellVal.includes('маркировка') || cellVal.includes('найменування')) {
                             modelColIdx = c;
                         }
                         if (cellVal.includes('ціна') || cellVal.includes('цена') || cellVal.includes('usd') || cellVal.includes('eur')) {
@@ -336,15 +456,13 @@
                     }
                 }
 
-                // Если в шапке явно не нашли цену, ищем правую колонку с числовыми значениями
                 let lastValidPrice = null;
 
                 rawRows.forEach((row, rowIndex) => {
-                    if (!Array.isArray(row) || rowIndex < 2) return; // Пропускаем шапку
+                    if (!Array.isArray(row) || rowIndex < 2) return;
 
-                    const modelCell = String(row[modelColIdx] || '').trim();
-                    if (!modelCell) {
-                        // Проверяем соседние колонки слева
+                    const foundModelRaw = String(row[modelColIdx] || '').trim();
+                    if (!isValidModelCode(foundModelRaw)) {
                         for (let c = 0; c < row.length; c++) {
                             if (isValidModelCode(String(row[c]))) {
                                 modelColIdx = c;
@@ -353,10 +471,9 @@
                         }
                     }
 
-                    const foundModelRaw = String(row[modelColIdx] || '').trim();
-                    if (!isValidModelCode(foundModelRaw)) return;
+                    const modelStr = String(row[modelColIdx] || '').trim();
+                    if (!isValidModelCode(modelStr)) return;
 
-                    // Извлекаем цену
                     let foundPrice = null;
                     if (priceColIdx !== -1 && row[priceColIdx]) {
                         const pStr = String(row[priceColIdx]).replace(/\s/g, '').replace(',', '.');
@@ -366,7 +483,6 @@
                         }
                     }
 
-                    // Если по колонке цены не нашли, ищем в крайних правых столбцах
                     if (!foundPrice) {
                         for (let c = row.length - 1; c >= 0; c--) {
                             const val = String(row[c]).replace(/\s/g, '').replace(',', '.');
@@ -381,8 +497,8 @@
                     if (foundPrice) lastValidPrice = foundPrice;
                     const priceToUse = foundPrice || lastValidPrice;
 
-                    if (priceToUse && foundModelRaw) {
-                        const cleaned = cleanModelName(foundModelRaw);
+                    if (priceToUse && modelStr) {
+                        const cleaned = cleanModelName(modelStr);
                         if (cleaned && !category.items.some(it => it.model === cleaned)) {
                             category.items.push({ model: cleaned, basePrice: priceToUse });
                         }
@@ -390,7 +506,13 @@
                 });
             });
 
-            return Object.values(canonicalMap).filter(cat => cat.items.length > 0);
+            return CATEGORY_CONFIGS.map(cfg => {
+                const found = canonicalMap[cfg.id];
+                return {
+                    ...cfg,
+                    items: found && found.items.length > 0 ? found.items : getFallbackItemsForCat(cfg.id)
+                };
+            });
         }
 
         function handleFileUpload(event) {
@@ -405,15 +527,15 @@
 
                     if (parsed && parsed.length > 0) {
                         categoriesData = parsed;
-                        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: 'Из файла', data: categoriesData }));
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: 'Власний файл', data: categoriesData }));
                         renderTiles();
-                        updateStatus(`Загружен: ${file.name}`);
-                        showCustomToast('Прайс-лист успешно обновлен!', 'success');
+                        document.getElementById('last-update-label').innerText = `Файл: ${file.name}`;
+                        showCustomToast('Прайс-лист успішно завантажено!', 'success');
                     } else {
-                        showCustomToast('Не удалось распознать маркировки в файле', 'error');
+                        showCustomToast('Не вдалося розпізнати таблицю', 'error');
                     }
                 } catch (err) {
-                    showCustomToast('Ошибка при чтении Excel', 'error');
+                    showCustomToast('Помилка читання Excel', 'error');
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -421,31 +543,35 @@
 
         function renderTiles() {
             const container = document.getElementById('tiles-container');
-            const countBadge = document.getElementById('categories-count');
+            const countBadge = document.getElementById('categories-count-badge');
             container.innerHTML = '';
 
-            countBadge.innerText = `${categoriesData.length} вкладок`;
+            countBadge.innerText = `${categoriesData.length} розділів`;
 
             categoriesData.forEach((category, idx) => {
                 const itemCount = category.items.length;
-                const tile = document.createElement('div');
-                tile.className = `group relative overflow-hidden rounded-xl shadow-xs hover:shadow-md transition-all duration-200 active:scale-98 cursor-pointer bg-white border border-slate-200 flex flex-col justify-between h-36 sm:h-40`;
+                const tile = document.createElement('a');
+                tile.className = `group bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-teal-500/50 hover:shadow-ios-elevated transition-all duration-200 flex flex-col justify-between min-h-[110px] shadow-sm active:scale-[0.98] cursor-pointer ${idx === 4 ? 'col-span-2 sm:col-span-1' : ''}`;
                 tile.onclick = () => openCategory(idx);
 
+                let badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200/80">${category.badge || (itemCount + ' мод.')}</span>`;
+                if (category.id === 'galactic') {
+                    badgeHtml = `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">Хіт сезону</span>`;
+                } else if (category.id === 'galactic lcac') {
+                    badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Склад Київ</span>`;
+                }
+
                 tile.innerHTML = `
-                    <div class="${category.colorClass} h-20 sm:h-24 p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden">
-                        <span class="self-end bg-white/20 backdrop-blur-md text-white text-[10px] sm:text-xs px-2 py-0.5 rounded-md font-bold">
-                            ${itemCount} шт
-                        </span>
-                        <div class="text-white font-bold text-sm sm:text-base leading-tight drop-shadow-xs">
-                            ${category.title}
-                        </div>
+                    <div class="flex justify-between items-start">
+                        <span class="inline-flex items-center justify-center w-9 h-8 rounded-lg bg-[#d9f2eb] text-[#0d7d6c] font-bold text-sm tracking-tight border border-[#c2ebdf]">${category.code}</span>
+                        ${badgeHtml}
                     </div>
-                    <div class="p-3 bg-white flex items-center justify-between">
-                        <span class="text-[11px] sm:text-xs font-semibold text-blue-600 group-hover:text-blue-700">Открыть</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5 text-blue-600 group-hover:translate-x-0.5 transition-transform">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                        </svg>
+                    <div class="my-2 w-full h-24 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center border border-slate-100">
+                        <img alt="${category.title}" class="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300" src="${category.image}">
+                    </div>
+                    <div class="mt-1">
+                        <span class="text-base font-bold text-slate-800 group-hover:text-teal-800 transition-colors block">${category.title}</span>
+                        <span class="text-[11px] text-slate-400 font-normal">${category.subtitle} • ${itemCount} мод.</span>
                     </div>
                 `;
                 container.appendChild(tile);
@@ -457,10 +583,8 @@
             const category = categoriesData[index];
 
             document.getElementById('category-title').innerText = category.title;
-            document.getElementById('category-stats').innerText = `Всего позиций: ${category.items.length}`;
-
-            const iconContainer = document.getElementById('category-icon');
-            iconContainer.className = `p-2.5 rounded-lg text-white shadow-xs ${category.colorClass}`;
+            document.getElementById('category-stats').innerText = `Всього позицій: ${category.items.length}`;
+            document.getElementById('category-icon').innerText = category.code;
 
             document.getElementById('search-input').value = '';
             renderTables(category.items);
@@ -491,23 +615,26 @@
             }
 
             const wrapper = document.createElement('div');
-            wrapper.className = 'bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden';
+            wrapper.className = 'bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden';
+
+            const discountMultiplier = (100 - dealerDiscount) / 100;
 
             const rowsHtml = items.map((item) => {
                 let displayPrice = item.basePrice;
                 const num = parseFloat(String(item.basePrice).replace(/\s/g, '').replace(',', '.'));
                 
                 if (!isNaN(num) && isFinite(num)) {
-                    const converted = num * EXCHANGE_RATES[selectedCurrency];
+                    const discounted = num * discountMultiplier;
+                    const converted = discounted * EXCHANGE_RATES[selectedCurrency];
                     displayPrice = converted.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + ' ' + CURRENCY_SYMBOLS[selectedCurrency];
                 }
 
                 return `
                     <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0">
-                        <td class="px-3.5 sm:px-5 py-3 font-semibold text-slate-800 text-xs sm:text-sm break-all">
+                        <td class="px-4 py-3.5 font-semibold text-slate-800 text-xs sm:text-sm break-all">
                             ${item.model}
                         </td>
-                        <td class="px-3.5 sm:px-5 py-3 text-right whitespace-nowrap">
+                        <td class="px-4 py-3.5 text-right whitespace-nowrap">
                             <span class="inline-block px-2.5 py-1 bg-emerald-50 text-emerald-700 font-bold rounded-lg border border-emerald-100 text-xs sm:text-sm">
                                 ${displayPrice}
                             </span>
@@ -517,12 +644,12 @@
             }).join('');
 
             wrapper.innerHTML = `
-                <div class="overflow-x-auto no-scrollbar">
+                <div class="overflow-x-auto hide-scrollbar">
                     <table class="w-full text-left">
                         <thead class="text-[10px] sm:text-xs text-slate-400 uppercase bg-slate-50 border-b border-slate-200">
                             <tr>
-                                <th scope="col" class="px-3.5 sm:px-5 py-2.5 font-bold">Маркировка</th>
-                                <th scope="col" class="px-3.5 sm:px-5 py-2.5 font-bold text-right">Цена (${selectedCurrency})</th>
+                                <th scope="col" class="px-4 py-3 font-bold">Маркування</th>
+                                <th scope="col" class="px-4 py-3 font-bold text-right">Ціна (${selectedCurrency})${dealerDiscount > 0 ? ' (-' + dealerDiscount + '%)' : ''}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -552,14 +679,29 @@
             renderTables(filtered);
         }
 
+        function handleGlobalSearch(query) {
+            const q = query.toLowerCase().trim();
+            if (!q) return;
+            // Ищем первую категорию с совпадением
+            for (let i = 0; i < categoriesData.length; i++) {
+                const match = categoriesData[i].items.find(item => item.model.toLowerCase().includes(q));
+                if (match) {
+                    openCategory(i);
+                    document.getElementById('search-input').value = query;
+                    filterTable();
+                    break;
+                }
+            }
+        }
+
         function setCurrency(curr) {
             selectedCurrency = curr;
             ['usd', 'uah', 'eur'].forEach(c => {
                 const btn = document.getElementById(`curr-${c}`);
                 if (c.toUpperCase() === curr) {
-                    btn.className = "px-2 py-1 rounded-md transition-all bg-white text-blue-600 shadow-xs";
+                    btn.className = "px-2 py-1.5 rounded-lg transition-all bg-white text-teal-600 shadow-xs";
                 } else {
-                    btn.className = "px-2 py-1 rounded-md transition-all hover:text-slate-900";
+                    btn.className = "px-2 py-1.5 rounded-lg transition-all hover:text-slate-900";
                 }
             });
 
@@ -568,8 +710,24 @@
             }
         }
 
-        function updateStatus(text) {
-            document.getElementById('cache-status').innerText = text;
+        function updateDiscount(val) {
+            let parsed = parseInt(val) || 0;
+            if (parsed < 0) parsed = 0;
+            if (parsed > 90) parsed = 90;
+            dealerDiscount = parsed;
+
+            const badge = document.getElementById('discount-badge-status');
+            if (dealerDiscount > 0) {
+                badge.innerText = `Знижка ${dealerDiscount}% активна`;
+                badge.className = "text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200";
+            } else {
+                badge.innerText = "Без знижки";
+                badge.className = "text-teal-700 font-medium bg-white/70 px-2 py-0.5 rounded-md border border-[#bfe7db]";
+            }
+
+            if (currentCategoryIndex !== null) {
+                renderTables(categoriesData[currentCategoryIndex].items);
+            }
         }
 
         function showCustomToast(msg, type = 'success') {
@@ -579,11 +737,11 @@
 
             toastMsg.innerText = msg;
             if (type === 'error') {
-                toastContent.className = 'bg-rose-50 border border-rose-200 text-rose-800 px-3 py-2 rounded-xl flex items-center justify-between text-xs shadow-xs fade-in';
+                toastContent.className = 'bg-rose-50 border border-rose-200 text-rose-800 px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm fade-in';
             } else if (type === 'warning') {
-                toastContent.className = 'bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl flex items-center justify-between text-xs shadow-xs fade-in';
+                toastContent.className = 'bg-amber-50 border border-amber-200 text-amber-800 px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm fade-in';
             } else {
-                toastContent.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl flex items-center justify-between text-xs shadow-xs fade-in';
+                toastContent.className = 'bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs shadow-sm fade-in';
             }
 
             toast.classList.remove('hidden');
@@ -594,58 +752,44 @@
             document.getElementById('toast-banner').classList.add('hidden');
         }
 
+        function getFallbackItemsForCat(catId) {
+            if (catId === 'побутові') {
+                return [
+                    { model: "SRK20ZSPR-S", basePrice: "525" },
+                    { model: "SRK25ZSPR-S", basePrice: "560" },
+                    { model: "SRK35ZSPR-S", basePrice: "650" }
+                ];
+            } else if (catId === 'мультисистеми') {
+                return [
+                    { model: "SCM40ZS-W", basePrice: "1 090" },
+                    { model: "SCM45ZS-W", basePrice: "1 180" }
+                ];
+            } else if (catId === 'напівпром') {
+                return [
+                    { model: "SRK71ZR-W + FDC71VNX-W", basePrice: "3 140" },
+                    { model: "SRK100ZR-W + FDC100VNX-W", basePrice: "4 376" }
+                ];
+            } else if (catId === 'galactic') {
+                return [
+                    { model: "GKZ09SH-W", basePrice: "660" },
+                    { model: "GKZ12SH-W", basePrice: "700" }
+                ];
+            } else {
+                return [
+                    { model: "GBZ18MLQ-W", basePrice: "1 040" },
+                    { model: "GBZ24MLQ-W", basePrice: "1 300" },
+                    { model: "GBZ36MLQ-W", basePrice: "1 690" },
+                    { model: "GCZ18MLQ-W", basePrice: "1 080" },
+                    { model: "GHZ18MLQ-W", basePrice: "1 120" }
+                ];
+            }
+        }
+
         function loadFallbackData() {
-            categoriesData = [
-                { 
-                    id: "побутові",
-                    title: "Побутові", 
-                    colorClass: CATEGORY_CONFIGS[0].color, 
-                    items: [ 
-                        { model: "SRK20ZSPR-S", basePrice: "525" }, 
-                        { model: "SRK25ZSPR-S", basePrice: "560" }, 
-                        { model: "SRK35ZSPR-S", basePrice: "650" }
-                    ] 
-                },
-                { 
-                    id: "мультисистеми",
-                    title: "Мультисистеми", 
-                    colorClass: CATEGORY_CONFIGS[1].color, 
-                    items: [ 
-                        { model: "SCM40ZS-W", basePrice: "1 090" }, 
-                        { model: "SCM45ZS-W", basePrice: "1 180" }
-                    ] 
-                },
-                { 
-                    id: "напівпром",
-                    title: "Напівпром", 
-                    colorClass: CATEGORY_CONFIGS[2].color, 
-                    items: [ 
-                        { model: "SRK71ZR-W + FDC71VNX-W", basePrice: "3 140" }, 
-                        { model: "SRK100ZR-W + FDC100VNX-W", basePrice: "4 376" }
-                    ] 
-                },
-                { 
-                    id: "galactic",
-                    title: "Galactic", 
-                    colorClass: CATEGORY_CONFIGS[3].color, 
-                    items: [ 
-                        { model: "GKZ09SH-W", basePrice: "660" }, 
-                        { model: "GKZ12SH-W", basePrice: "700" }
-                    ] 
-                },
-                { 
-                    id: "galactic lcac",
-                    title: "Galactic LCAC", 
-                    colorClass: CATEGORY_CONFIGS[4].color, 
-                    items: [ 
-                        { model: "GBZ18MLQ-W", basePrice: "1 040" }, 
-                        { model: "GBZ24MLQ-W", basePrice: "1 300" },
-                        { model: "GBZ36MLQ-W", basePrice: "1 690" },
-                        { model: "GCZ18MLQ-W", basePrice: "1 080" },
-                        { model: "GHZ18MLQ-W", basePrice: "1 120" }
-                    ] 
-                }
-            ];
+            categoriesData = CATEGORY_CONFIGS.map(cfg => ({
+                ...cfg,
+                items: getFallbackItemsForCat(cfg.id)
+            }));
             renderTiles();
         }
     </script>
