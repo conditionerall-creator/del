@@ -24,7 +24,7 @@
     </script>
 
     <style>
-        /* Поддержка безопасных зон для iOS (iPhone Notch / Dynamic Island) */
+        /* Поддержка безопасных зон для iOS */
         body {
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
@@ -50,7 +50,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
 
-    <!-- Шапка приложения с адаптивностью для iOS / Android -->
+    <!-- Шапка приложения -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
         <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
             <!-- Логотип и заголовок -->
@@ -68,19 +68,19 @@
 
             <!-- Валюты, Обновление и Загрузка Excel -->
             <div class="flex items-center gap-1.5 sm:gap-2">
-                <!-- Селектор валют -->
+                <!-- Переключатель валют -->
                 <div class="inline-flex items-center rounded-lg bg-slate-100 p-0.5 text-xs font-bold text-slate-600 border border-slate-200">
                     <button id="curr-usd" onclick="setCurrency('USD')" class="px-2 py-1 rounded-md transition-all bg-white text-blue-600 shadow-xs">USD</button>
                     <button id="curr-uah" onclick="setCurrency('UAH')" class="px-2 py-1 rounded-md transition-all hover:text-slate-900">UAH</button>
                     <button id="curr-eur" onclick="setCurrency('EUR')" class="px-2 py-1 rounded-md transition-all hover:text-slate-900">EUR</button>
                 </div>
 
-                <!-- Кнопка обновления -->
-                <button onclick="checkOnlinePrice(true)" title="Обновить с GitHub" class="p-2 text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all border border-slate-200 active:scale-95">
+                <!-- Кнопка синхронизации -->
+                <button onclick="checkOnlinePrice(true)" title="Обновить из файла" class="p-2 text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all border border-slate-200 active:scale-95">
                     <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 </button>
 
-                <!-- Загрузка пользовательского файла -->
+                <!-- Загрузка собственного Excel -->
                 <label class="cursor-pointer p-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-all active:scale-95 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
@@ -89,7 +89,7 @@
         </div>
     </header>
 
-    <!-- Всплывающее сообщение (Toast) -->
+    <!-- Уведомления Toast -->
     <div id="toast-banner" class="hidden max-w-5xl mx-auto px-3 sm:px-6 mt-3 no-print">
         <div id="toast-content" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl flex items-center justify-between text-xs shadow-xs fade-in">
             <span id="toast-message">Данные обновлены!</span>
@@ -100,7 +100,7 @@
     <!-- Основной контент -->
     <main class="flex-grow max-w-5xl mx-auto w-full px-3 sm:px-6 py-4 print-full-width">
         
-        <!-- ЭКРАН 1: Сетка категорий (Плитки строго 2 в ряд) -->
+        <!-- ЭКРАН 1: Сетка категорий (Строго 5 плиток) -->
         <div id="tiles-view" class="fade-in">
             <div class="flex items-center justify-between gap-2 mb-4">
                 <div>
@@ -110,15 +110,15 @@
                 <span id="categories-count" class="text-xs font-bold px-2.5 py-1 bg-slate-200/80 text-slate-700 rounded-lg">5 вкладок</span>
             </div>
             
-            <!-- Плитки 2 в ряд на всех экранах -->
+            <!-- Плитки категорий -->
             <div class="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5" id="tiles-container">
-                <!-- Плитки генерируются через JS -->
+                <!-- Генерация через JS -->
             </div>
         </div>
 
-        <!-- ЭКРАН 2: Список маркировок и цен -->
+        <!-- ЭКРАН 2: Таблица маркировок и цен -->
         <div id="table-view" class="hidden flex-col gap-4 fade-in">
-            <!-- Панель управления -->
+            <!-- Верхняя панель -->
             <div class="flex flex-col sm:flex-row gap-2.5 justify-between items-stretch sm:items-center no-print">
                 <button onclick="goBack()" class="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 py-2.5 px-3.5 rounded-xl shadow-xs active:scale-95 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
@@ -135,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- Заголовок выбранной категории -->
+            <!-- Шапка выбранной категории -->
             <div class="flex items-center gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-xs">
                 <div id="category-icon" class="p-2.5 rounded-lg text-white shadow-xs bg-blue-600 shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -146,7 +146,7 @@
                 </div>
             </div>
 
-            <!-- Таблица с короткой маркировкой и ценой -->
+            <!-- Таблица с чисто Маркировкой и Ценой -->
             <div id="tables-container" class="space-y-4">
                 <!-- Таблица создается JS -->
             </div>
@@ -169,22 +169,19 @@
     </footer>
 
     <script>
-        const CACHE_KEY = 'san_ice_price_5tabs_v2';
+        const CACHE_KEY = 'san_ice_price_exact5_v3';
         const ONLINE_FILE_PATH = './price.xlsx';
-
-        // Имена только 5 разрешенных вкладок
-        const ALLOWED_TABS = ['побутові', 'мультисистеми', 'напівпром', 'galactic', 'galactic lcac'];
 
         const EXCHANGE_RATES = { USD: 1.0, UAH: 41.5, EUR: 0.92 };
         const CURRENCY_SYMBOLS = { USD: '$', UAH: 'грн', EUR: '€' };
 
-        // Оформление для 5 основных вкладок
-        const categoryConfigs = [
-            { key: 'побутові', title: 'Побутові', color: 'bg-gradient-to-br from-blue-600 to-cyan-500' },
-            { key: 'мультисистеми', title: 'Мультисистеми', color: 'bg-gradient-to-br from-indigo-600 to-violet-500' },
-            { key: 'напівпром', title: 'Напівпром', color: 'bg-gradient-to-br from-emerald-600 to-teal-500' },
-            { key: 'galactic', title: 'Galactic', color: 'bg-gradient-to-br from-amber-500 to-orange-500' },
-            { key: 'galactic lcac', title: 'Galactic LCAC', color: 'bg-gradient-to-br from-rose-600 to-pink-500' }
+        // Ровно 5 разрешенных категорий
+        const CATEGORY_CONFIGS = [
+            { id: 'побутові', title: 'Побутові', color: 'bg-gradient-to-br from-blue-600 to-cyan-500' },
+            { id: 'мультисистеми', title: 'Мультисистеми', color: 'bg-gradient-to-br from-indigo-600 to-violet-500' },
+            { id: 'напівпром', title: 'Напівпром', color: 'bg-gradient-to-br from-emerald-600 to-teal-500' },
+            { id: 'galactic', title: 'Galactic', color: 'bg-gradient-to-br from-amber-500 to-orange-500' },
+            { id: 'galactic lcac', title: 'Galactic LCAC', color: 'bg-gradient-to-br from-rose-600 to-pink-500' }
         ];
 
         let categoriesData = [];
@@ -201,7 +198,8 @@
                 try {
                     const parsed = JSON.parse(cached);
                     categoriesData = parsed.data || [];
-                    renderTiles();
+                    if (categoriesData.length === 0) loadFallbackData();
+                    else renderTiles();
                     updateStatus(`Кэш от: ${parsed.timestamp}`);
                 } catch (e) {
                     loadFallbackData();
@@ -220,7 +218,7 @@
             try {
                 const response = await fetch(ONLINE_FILE_PATH + '?t=' + new Date().getTime(), { cache: 'no-cache' });
                 if (!response.ok) {
-                    if (isManual) showCustomToast('Файл price.xlsx не найден в репозитории', 'warning');
+                    if (isManual) showCustomToast('Файл price.xlsx не найден', 'warning');
                     return;
                 }
 
@@ -237,10 +235,66 @@
                     if (isManual) showCustomToast('Прайс успешно обновлен!', 'success');
                 }
             } catch (err) {
-                if (isManual) showCustomToast('Ошибка обновления файлов', 'error');
+                if (isManual) showCustomToast('Ошибка обновления файла', 'error');
             } finally {
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
             }
+        }
+
+        // Определение, к какой из 5 категорий относится лист Excel
+        function getCanonicalCategoryKey(sheetName) {
+            const norm = sheetName.trim().toLowerCase();
+            
+            if (norm.includes('побутові') || norm.includes('побытовые')) {
+                return 'побутові';
+            }
+            if (norm.includes('мультисистеми') || norm.includes('мультисистемы')) {
+                return 'мультисистеми';
+            }
+            if (norm.includes('напівпром') || norm.includes('полупром')) {
+                return 'напівпром';
+            }
+            if (norm.includes('galactic lcac') || norm.includes('galactic-lcac')) {
+                return 'galactic lcac';
+            }
+            // Только точное совпадение для Galactic, чтобы отсеять VRF, ККБ, TH
+            if (norm === 'galactic') {
+                return 'galactic';
+            }
+            
+            return null; // Игнорируем все остальные вкладки
+        }
+
+        // Проверка, является ли строка валидной маркировкой кондиционера
+        function isValidModelCode(str) {
+            if (!str || typeof str !== 'string') return false;
+            const trimmed = str.trim();
+            if (trimmed.length < 3) return false;
+
+            // Должна содержать латинские буквы
+            if (!/[a-zA-Z]/.test(trimmed)) return false;
+
+            const lower = trimmed.toLowerCase();
+
+            // Слова-исключения (заголовки, технические слова)
+            const blackList = [
+                'модель', 'тип', 'найменування', 'продуктивність', 'споживана', 'потужність',
+                'коефіцієнт', 'ціна', 'дилер', 'аксесуари', 'підключення', 'внутрішній',
+                'зовнішній', 'панель', 'пульт', 'комплект', 'швидкий', 'перехід', 'внутр',
+                'зовніш', 'бездротовий', 'дротовий', 'інвертор', 'спліт', 'система', 'холод',
+                'тепло', 'серія', 'моделі', 'аксессуары', 'наименование', 'примітка'
+            ];
+
+            for (const word of blackList) {
+                if (lower.includes(word)) return false;
+            }
+
+            // Маркировка должна содержать цифры или дефис (SRK20ZSPR-S, SCM40ZS-W, GKZ09SH-W)
+            if (!/[0-9]/.test(trimmed) && !trimmed.includes('-')) {
+                return false;
+            }
+
+            return true;
         }
 
         function sanitizeModelName(str) {
@@ -254,143 +308,100 @@
             return cleaned.trim();
         }
 
-        // Проверка, является ли строка заголовком типажа блоков (например "Настінні", "Стельові", "МОДЕЛЬ INFINI")
-        function checkBlockHeader(rowText) {
-            if (!rowText) return null;
-            const text = rowText.trim();
-            const lower = text.toLowerCase();
-
-            // Игнорируем обычные шапки таблиц
-            if (lower.includes('найменування') || lower.includes('продуктивність') || lower.includes('споживана потужність') || lower.includes('роздрібна ціна') || lower.includes('ціна дилер') || lower.includes('типаж')) {
-                return null;
-            }
-
-            const headerKeywords = [
-                'настінні', 'стельові', 'касетні', 'канальні', 'колонні', 
-                'аксесуари', 'модель infini', 'модель vega', 'модель oriell', 
-                'мультиспліт', 'внутрішні блоки', 'зовнішні блоки', 'hyper inverter', 'micro inverter', 'standard inverter'
-            ];
-
-            for (const kw of headerKeywords) {
-                if (lower.includes(kw)) {
-                    // Возвращаем красиво отформатированный заголовок
-                    return text.replace(/^[!\s\-_]+|[!\s\-_]+$/g, '');
+        function extractPriceFromRow(cells) {
+            for (let i = cells.length - 1; i >= 0; i--) {
+                const raw = cells[i];
+                if (!raw) continue;
+                const cleaned = raw.replace(/\s/g, '').replace(',', '.');
+                const num = parseFloat(cleaned);
+                
+                if (!isNaN(num) && isFinite(num) && num > 0) {
+                    return raw;
+                }
+                if (cleaned.toLowerCase().includes('зазапитом') || cleaned.toLowerCase().includes('запросом')) {
+                    return 'За запитом';
                 }
             }
             return null;
         }
 
-        // Обработка XLSX файла с фильтрацией строго 5 вкладок и подзаголовками
+        // Парсинг файла Excel строго для 5 категорий
         function parseExcelArrayBuffer(buffer) {
             const workbook = XLSX.read(buffer, { type: 'array' });
-            const resultCategories = [];
+            
+            const canonicalMap = {
+                'побутові': { title: 'Побутові', colorClass: CATEGORY_CONFIGS[0].color, items: [] },
+                'мультисистеми': { title: 'Мультисистеми', colorClass: CATEGORY_CONFIGS[1].color, items: [] },
+                'напівпром': { title: 'Напівпром', colorClass: CATEGORY_CONFIGS[2].color, items: [] },
+                'galactic': { title: 'Galactic', colorClass: CATEGORY_CONFIGS[3].color, items: [] },
+                'galactic lcac': { title: 'Galactic LCAC', colorClass: CATEGORY_CONFIGS[4].color, items: [] }
+            };
 
             workbook.SheetNames.forEach((sheetName) => {
-                const normName = sheetName.trim().toLowerCase();
-                
-                // Проверяем совпадение только с 5 разрешенными вкладками
-                if (!ALLOWED_TABS.some(tab => normName.includes(tab))) {
-                    return;
-                }
+                const catKey = getCanonicalCategoryKey(sheetName);
+                if (!catKey) return; // Игнорируем лишние вкладки
 
                 const worksheet = workbook.Sheets[sheetName];
                 const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
                 if (!rawRows || rawRows.length === 0) return;
 
-                const cfg = categoryConfigs.find(c => normName.includes(c.key)) || {
-                    title: sheetName.trim(),
-                    color: 'bg-gradient-to-br from-blue-600 to-cyan-500'
-                };
-
-                const category = {
-                    title: cfg.title,
-                    colorClass: cfg.color,
-                    items: []
-                };
-
-                let lastHeader = '';
+                const category = canonicalMap[catKey];
 
                 rawRows.forEach((row) => {
                     const cells = row.map(cell => String(cell).trim());
-                    const nonEmp = cells.filter(c => c !== '');
-                    if (nonEmp.length === 0) return;
+                    if (cells.every(c => c === '')) return;
 
-                    const rowJoined = nonEmp.join(' ');
-
-                    // 1. Проверяем, не строка ли это типажа блоков (заголовка группы)
-                    const detectedHeader = checkBlockHeader(rowJoined);
-                    if (detectedHeader && detectedHeader !== lastHeader) {
-                        lastHeader = detectedHeader;
-                        category.items.push({
-                            type: 'header',
-                            title: detectedHeader
-                        });
-                        return;
-                    }
-
-                    // 2. Ищем цену и модель
-                    let priceIdx = -1;
-                    let modelIdx = -1;
-
-                    // Находим колонку с ценой (ищем справа налево)
-                    for (let i = cells.length - 1; i >= 0; i--) {
-                        const str = cells[i].replace(/\s/g, '').replace(',', '.');
-                        const isNum = !isNaN(parseFloat(str)) && isFinite(str) && parseFloat(str) > 0;
-                        const isAsk = str.toLowerCase().includes('за запитом') || str.toLowerCase().includes('запросом');
-                        if (isNum || isAsk) {
-                            priceIdx = i;
-                            break;
-                        }
-                    }
-
-                    // Находим маркировку/модель (в Напівпром могут быть сдвоенные ячейки внутр+внеш)
-                    let modelStr = '';
-                    if (priceIdx > 0) {
-                        // Специально для "Напівпром": смотрим ячейки внутреннего и наружного блока (колонка E и F)
-                        if (cells[4] && cells[5] && /^[A-Z0-9\-\/#]+$/i.test(cells[4]) && /^[A-Z0-9\-\/#]+$/i.test(cells[5])) {
-                            modelStr = `${cells[4]} / ${cells[5]}`;
-                        } else {
-                            for (let i = 0; i < priceIdx; i++) {
-                                const val = cells[i];
-                                if (val !== '' && !val.toLowerCase().includes('модель') && !val.toLowerCase().includes('тип') && !val.toLowerCase().includes('найменування')) {
-                                    modelIdx = i;
-                                    break;
-                                }
-                            }
-                            if (modelIdx !== -1) {
-                                modelStr = sanitizeModelName(cells[modelIdx]);
+                    if (catKey === 'напівпром') {
+                        // В Напівпром сдвоенные блоки (внутренний и внешний)
+                        let inUnit = cells[4] || '';
+                        let outUnit = cells[5] || '';
+                        
+                        if (!isValidModelCode(inUnit) && !isValidModelCode(outUnit)) {
+                            const modelsInRow = cells.filter(c => isValidModelCode(c));
+                            if (modelsInRow.length >= 2) {
+                                inUnit = modelsInRow[0];
+                                outUnit = modelsInRow[1];
+                            } else if (modelsInRow.length === 1) {
+                                inUnit = modelsInRow[0];
                             }
                         }
-                    }
 
-                    if (modelStr && priceIdx !== -1) {
-                        if (modelStr.length >= 3 && 
-                            !modelStr.toLowerCase().includes('маркиров') && 
-                            !modelStr.toLowerCase().includes('наимен') &&
-                            !modelStr.toLowerCase().includes('модель')) {
-                            
-                            category.items.push({
-                                type: 'item',
-                                model: modelStr,
-                                basePrice: cells[priceIdx]
-                            });
+                        let modelStr = '';
+                        if (isValidModelCode(inUnit) && isValidModelCode(outUnit)) {
+                            modelStr = `${sanitizeModelName(inUnit)} / ${sanitizeModelName(outUnit)}`;
+                        } else if (isValidModelCode(inUnit)) {
+                            modelStr = sanitizeModelName(inUnit);
+                        } else if (isValidModelCode(outUnit)) {
+                            modelStr = sanitizeModelName(outUnit);
+                        }
+
+                        if (modelStr) {
+                            const price = extractPriceFromRow(cells);
+                            if (price) {
+                                category.items.push({ model: modelStr, basePrice: price });
+                            }
+                        }
+                    } else {
+                        // Для Побутові, Мультисистеми, Galactic, Galactic LCAC:
+                        // Маркировка всегда в первой колонке с текстом маркировки
+                        let modelCandidate = cells[0];
+                        if (!isValidModelCode(modelCandidate) && cells[1] && isValidModelCode(cells[1])) {
+                            modelCandidate = cells[1];
+                        }
+
+                        if (isValidModelCode(modelCandidate)) {
+                            const cleanModel = sanitizeModelName(modelCandidate);
+                            const price = extractPriceFromRow(cells);
+                            if (price && cleanModel) {
+                                category.items.push({ model: cleanModel, basePrice: price });
+                            }
                         }
                     }
                 });
-
-                if (category.items.length > 0) {
-                    resultCategories.push(category);
-                }
             });
 
-            // Упорядочиваем 5 ровных категорий
-            resultCategories.sort((a, b) => {
-                const indexA = categoryConfigs.findIndex(c => c.title.toLowerCase() === a.title.toLowerCase());
-                const indexB = categoryConfigs.findIndex(c => c.title.toLowerCase() === b.title.toLowerCase());
-                return indexA - indexB;
-            });
-
-            return resultCategories;
+            // Возвращаем строго те из 5 категорий, в которых есть элементы
+            return Object.values(canonicalMap).filter(cat => cat.items.length > 0);
         }
 
         function handleFileUpload(event) {
@@ -410,7 +421,7 @@
                         updateStatus(`Загружен: ${file.name}`);
                         showCustomToast('Прайс-лист успешно обновлен!', 'success');
                     } else {
-                        showCustomToast('Не найдены требуемые 5 вкладок в файле', 'error');
+                        showCustomToast('Не удалось извлечь данные из 5 вкладок', 'error');
                     }
                 } catch (err) {
                     showCustomToast('Ошибка при чтении Excel', 'error');
@@ -419,7 +430,7 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // Отрисовка ровно 5 плиток категорий
+        // Отрисовка строго 5 плиток категорий
         function renderTiles() {
             const container = document.getElementById('tiles-container');
             const countBadge = document.getElementById('categories-count');
@@ -438,7 +449,7 @@
             }
 
             categoriesData.forEach((category, idx) => {
-                const itemCount = category.items.filter(i => i.type !== 'header').length;
+                const itemCount = category.items.length;
                 const tile = document.createElement('div');
                 tile.className = `group relative overflow-hidden rounded-xl shadow-xs hover:shadow-md transition-all duration-200 active:scale-98 cursor-pointer bg-white border border-slate-200 flex flex-col justify-between h-36 sm:h-40`;
                 tile.onclick = () => openCategory(idx);
@@ -466,10 +477,9 @@
         function openCategory(index) {
             currentCategoryIndex = index;
             const category = categoriesData[index];
-            const itemCount = category.items.filter(i => i.type !== 'header').length;
 
             document.getElementById('category-title').innerText = category.title;
-            document.getElementById('category-stats').innerText = `Всего позиций: ${itemCount}`;
+            document.getElementById('category-stats').innerText = `Всего позиций: ${category.items.length}`;
 
             const iconContainer = document.getElementById('category-icon');
             iconContainer.className = `p-2.5 rounded-lg text-white shadow-xs ${category.colorClass}`;
@@ -488,7 +498,7 @@
             document.getElementById('tiles-view').classList.remove('hidden');
         }
 
-        // Отрисовка таблицы с ПОЦЕНТРОВАНИЕМ ТИПАЖЕЙ БЛОКОВ
+        // Чистая отрисовка таблицы: Маркировка — Цена
         function renderTables(items) {
             const container = document.getElementById('tables-container');
             const emptyState = document.getElementById('empty-state');
@@ -507,18 +517,6 @@
             wrapper.className = 'bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden';
 
             const rowsHtml = items.map((item) => {
-                // Если элемент является заголовком типажа блоков (например "Настінні", "Стельові")
-                if (item.type === 'header') {
-                    return `
-                        <tr class="bg-slate-100/90 border-y border-slate-200">
-                            <td colspan="2" class="py-2.5 px-4 text-center font-bold text-xs sm:text-sm text-blue-900 tracking-wide uppercase">
-                                ${item.title}
-                            </td>
-                        </tr>
-                    `;
-                }
-
-                // Обычный элемент с маркировкой и ценой
                 let displayPrice = item.basePrice;
                 const num = parseFloat(String(item.basePrice).replace(/\s/g, '').replace(',', '.'));
                 
@@ -571,7 +569,6 @@
             }
 
             const filtered = originalItems.filter(item => {
-                if (item.type === 'header') return false; // при поиске заголовки не мешают
                 return item.model && item.model.toLowerCase().includes(query);
             });
 
@@ -620,59 +617,62 @@
             document.getElementById('toast-banner').classList.add('hidden');
         }
 
-        // Демонстрационные данные с типажами блоков
+        // Демонстрационные данные строго для 5 категорий
         function loadFallbackData() {
             categoriesData = [
                 { 
                     title: "Побутові", 
-                    colorClass: categoryConfigs[0].color, 
+                    colorClass: CATEGORY_CONFIGS[0].color, 
                     items: [ 
-                        { type: 'item', model: "SRK20ZSPR-S", basePrice: "525.0" }, 
-                        { type: 'item', model: "SRK25ZSPR-S", basePrice: "560.0" }, 
-                        { type: 'item', model: "SRK35ZSPR-S", basePrice: "650.0" } 
+                        { model: "SRK20ZSPR-S", basePrice: "525" }, 
+                        { model: "SRK25ZSPR-S", basePrice: "560" }, 
+                        { model: "SRK35ZSPR-S", basePrice: "650" },
+                        { model: "SRK45ZSPR-S", basePrice: "1 100" },
+                        { model: "SRK63ZSPR-S", basePrice: "1 510" },
+                        { model: "SRK71ZSPR-S", basePrice: "1 745" }
                     ] 
                 },
                 { 
                     title: "Мультисистеми", 
-                    colorClass: categoryConfigs[1].color, 
+                    colorClass: CATEGORY_CONFIGS[1].color, 
                     items: [ 
-                        { type: 'header', title: 'Зовнішні блоки' },
-                        { type: 'item', model: "SCM40ZS-W", basePrice: "1090" }, 
-                        { type: 'item', model: "SCM45ZS-W", basePrice: "1180" },
-                        { type: 'header', title: 'Внутрішні блоки' },
-                        { type: 'item', model: "SKM20ZSP-W", basePrice: "230" },
-                        { type: 'item', model: "SKM25ZSP-W", basePrice: "264" }
+                        { model: "SCM40ZS-W", basePrice: "1 090" }, 
+                        { model: "SCM45ZS-W", basePrice: "1 180" },
+                        { model: "SCM50ZS-W", basePrice: "1 364" },
+                        { model: "SCM60ZS-W", basePrice: "1 679" },
+                        { model: "SCM71ZS-W", basePrice: "2 030" },
+                        { model: "SKM20ZSP-W", basePrice: "230" },
+                        { model: "SKM25ZSP-W", basePrice: "264" }
                     ] 
                 },
                 { 
                     title: "Напівпром", 
-                    colorClass: categoryConfigs[2].color, 
+                    colorClass: CATEGORY_CONFIGS[2].color, 
                     items: [ 
-                        { type: 'header', title: 'Настінні' },
-                        { type: 'item', model: "SRK71ZR-W / FDC71VNX-W", basePrice: "3 140" }, 
-                        { type: 'item', model: "SRK100ZR-W / FDC100VNX-W", basePrice: "4 376" }, 
-                        { type: 'header', title: 'Стельові' },
-                        { type: 'item', model: "FDE40VH / SRC40ZSX-W1", basePrice: "2 496" },
-                        { type: 'item', model: "FDE50VH / SRC50ZSX-W2", basePrice: "2 819" }
+                        { model: "SRK71ZR-W / FDC71VNX-W", basePrice: "3 140" }, 
+                        { model: "SRK100ZR-W / FDC100VNX-W", basePrice: "4 376" }, 
+                        { model: "FDE40VH / SRC40ZSX-W1", basePrice: "2 496" },
+                        { model: "FDE50VH / SRC50ZSX-W2", basePrice: "2 819" }
                     ] 
                 },
                 { 
                     title: "Galactic", 
-                    colorClass: categoryConfigs[3].color, 
+                    colorClass: CATEGORY_CONFIGS[3].color, 
                     items: [ 
-                        { type: 'header', title: 'Моделі INFINI' },
-                        { type: 'item', model: "GKZ09SH-W", basePrice: "660" }, 
-                        { type: 'header', title: 'Моделі VEGA' },
-                        { type: 'item', model: "GKZ07A-W", basePrice: "248" },
-                        { type: 'item', model: "GKZ09A-W", basePrice: "330" }
+                        { model: "GKZ09SH-W", basePrice: "660" }, 
+                        { model: "GKZ07A-W", basePrice: "248" },
+                        { model: "GKZ09A-W", basePrice: "330" },
+                        { model: "GKZ12A-W", basePrice: "390" }
                     ] 
                 },
                 { 
                     title: "Galactic LCAC", 
-                    colorClass: categoryConfigs[4].color, 
+                    colorClass: CATEGORY_CONFIGS[4].color, 
                     items: [ 
-                        { type: 'item', model: "GBZ18MLQ-W", basePrice: "330.15" }, 
-                        { type: 'item', model: "GFZ60MLQ-W", basePrice: "823.00" } 
+                        { model: "GBZ18MLQ-W", basePrice: "1 040" }, 
+                        { model: "GBZ24MLQ-W", basePrice: "1 300" },
+                        { model: "GBZ36MLQ-W", basePrice: "1 690" },
+                        { model: "GBZ48ML(Q)-W", basePrice: "2 175" }
                     ] 
                 }
             ];
